@@ -94,13 +94,13 @@ class MapViewController: UIViewController, MFMessageComposeViewControllerDelegat
         
         let marker = GMSMarker()
         //marker.position = CLLocationCoordinate2D(latitude: locationManager.location!.coordinate.latitude, longitude: locationManager.location!.coordinate.longitude)
-        marker.position = CLLocationCoordinate2D(latitude: 37.871163, longitude: -122.252717)
+        marker.position = CLLocationCoordinate2D(latitude: 37.870397, longitude: -122.252419)
         marker.title = "Start"
         //marker.snippet = "Malaysia"
         marker.map = mapView
         
         let marker2 = GMSMarker()
-        marker2.position = CLLocationCoordinate2D(latitude: 37.875226, longitude: -122.256649)
+        marker2.position = CLLocationCoordinate2D(latitude: 37.871629, longitude: -122.252707)
         marker2.title = "End"
         //marker2.snippet = "Malaysia"
         marker2.map = mapView
@@ -159,7 +159,7 @@ class MapViewController: UIViewController, MFMessageComposeViewControllerDelegat
     
     func fetchRoute(from source: CLLocationCoordinate2D, to destination: CLLocationCoordinate2D) {
         
-        let combinedUrl : String = "https://maps.googleapis.com/maps/api/directions/json?origin=37.871163,-122.252717&destination=37.875226,-122.256649&mode=walking&key=AIzaSyDoagRoGRHcoory1pmwdyl03rh3xIQLFJI"
+        let combinedUrl : String = "https://maps.googleapis.com/maps/api/directions/json?origin=37.870397,-122.252419&destination=37.871629,-122.252707&mode=walking&key=AIzaSyDoagRoGRHcoory1pmwdyl03rh3xIQLFJI"
         
         let url = URL(string:combinedUrl)
         
@@ -217,7 +217,7 @@ class MapViewController: UIViewController, MFMessageComposeViewControllerDelegat
         composeVC.messageComposeDelegate = self
         
         // Configure the fields of the interface.
-        composeVC.recipients = ["4988589750"]
+        composeVC.recipients = ["4088589750"]
         composeVC.body = "SOS"
         
         // Present the view controller modally.
