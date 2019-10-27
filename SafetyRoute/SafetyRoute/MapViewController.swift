@@ -43,7 +43,7 @@ class MapViewController: UIViewController {
     let defaultLocation = CLLocation(latitude: -33.869405, longitude: 151.199)
     
    
-    
+    var path: GMSPath?
     
     // Update the map once the user has made their selection.
     @IBAction func unwindToMain(segue: UIStoryboardSegue) {
@@ -91,20 +91,20 @@ class MapViewController: UIViewController {
         
         
         let marker = GMSMarker()
-        marker.position = CLLocationCoordinate2D(latitude: 37.872167, longitude: -122.263386)
-        marker.title = "Destination 1"
+        //marker.position = CLLocationCoordinate2D(latitude: locationManager.location!.coordinate.latitude, longitude: locationManager.location!.coordinate.longitude)
+        marker.position = CLLocationCoordinate2D(latitude: 37.871163, longitude: -122.252717)
+        marker.title = "Start"
         //marker.snippet = "Malaysia"
         marker.map = mapView
         
         let marker2 = GMSMarker()
-        marker2.position = CLLocationCoordinate2D(latitude: 37.875176, longitude: -122.256642)
-        marker2.title = "Destination 2"
+        marker2.position = CLLocationCoordinate2D(latitude: 37.875226, longitude: -122.256649)
+        marker2.title = "End"
         //marker2.snippet = "Malaysia"
         marker2.map = mapView
-    
+ 
         
-        
-       let a_coordinate_string = "37.872167, -122.263386"
+     /*  let a_coordinate_string = "37.872167, -122.263386"
         let b_coordinate_string = "37.875176, -122.256642"
         
         let urlString = "https://maps.googleapis.com/maps/api/directions/json?origin=\(a_coordinate_string)&destination=\(b_coordinate_string)&mode=walking&key=AIzaSyDoagRoGRHcoory1pmwdyl03rh3xIQLFJI"
@@ -140,40 +140,70 @@ class MapViewController: UIViewController {
         })
         task.resume()
         
-        
-     /*   if let array = json["rows"] as? NSArray {
-            if let rows = array[0] as? NSDictionary{
-                if let array2 = rows["elements"] as? NSArray{
-                    if let elements = array2[0] as? NSDictionary{
-                        if let duration = elements["duration"] as? NSDictionary {
-                            if let text = duration["text"] as? String{
-                                DispatchQueue.main.async {
-                                    self.lbl_eta_duration.text = text;
-                                }
-                            }
-                        }
-                        if let duration = elements["distance"] as? NSDictionary {
-                            if let text = duration["text"] as? String{
-                                DispatchQueue.main.async {
-                                    self.lbl_distance.text = text;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }*/
-        
+
         let path = GMSPath(fromEncodedPath: "yjxP{}mkRbCr@hI|CjCp@hB^vAFnABzBG`C[ZGFXLx@wBb@_@Da@@iA@SHOZ?n@D\\J\\NTRRZRf@R")
         let polyline = GMSPolyline(path:path)
         polyline.strokeWidth = 4
-        polyline.strokeColor = UIColor.init(hue: 210, saturation: 88, brightness: 84, alpha: 1)
+       // polyline.strokeColor = UIColor.init(hue: 210, saturation: 88, brightness: 84, alpha: 1)
         polyline.map = mapView
+        */
         
-        
-        
+        fetchRoute(from: marker.position, to: marker2.position)
+   
 
     }
+    
+    
+    func fetchRoute(from source: CLLocationCoordinate2D, to destination: CLLocationCoordinate2D) {
+        
+        let combinedUrl : String = "https://maps.googleapis.com/maps/api/directions/json?origin=37.871163,-122.252717&destination=37.875226,-122.256649&mode=walking&key=AIzaSyDoagRoGRHcoory1pmwdyl03rh3xIQLFJI"
+        
+        let url = URL(string:combinedUrl)
+        
+        let task = URLSession.shared.dataTask(with: url!) { (data:Data?, response:URLResponse?, error:Error?) in
+            
+            if error != nil {
+                print(error.debugDescription)
+                return
+            }
+            
+            do {
+                let json = try JSONSerialization.jsonObject(with: data!, options: .mutableContainers) as! NSDictionary
+                print(json)
+                //We need to get to the points key in overview_polyline object in order to pass the points to GMSPath.
+                let route = (((json.object(forKey: "routes") as! NSArray).object(at: 0) as! NSDictionary).object(forKey: "overview_polyline") as! NSDictionary).value(forKey: "points") as! String
+                
+                //Draw on main thread always else it will crash
+                DispatchQueue.main.async {
+                    self.path  = GMSPath(fromEncodedPath:route)!
+                    let polyline  = GMSPolyline(path: self.path)
+                    polyline.strokeColor = UIColor.green
+                    polyline.strokeWidth = 5.0
+                    
+                    //mapView is your GoogleMaps Object i.e. _mapView in your case
+                    polyline.map = self.mapView
+                }
+            } catch {
+            }
+        }
+        task.resume()
+        
+        let updateTimer = Timer.scheduledTimer(timeInterval: 15.0, target: self, selector: #selector(MapViewController.checkLocation), userInfo: nil, repeats: true)
+        
+        print(updateTimer)
+    }
+    
+    @objc func checkLocation() {
+        GMSGeometryIsLocationOnPathTolerance(locationManager.location!.coordinate, path!, true, 20)
+    }
+//
+//    func GMSGeometryIsLocationOnPathTolerance(point: CLLocationCoordinate2D, path: GMSPath, geodesic: Bool, tolerance: CLLocationDistance){
+//        print("Made it")
+//    }
+    
+
+    
+    
     
     enum JSONError: String, Error {
         case NoData = "ERROR: no data"
@@ -261,16 +291,6 @@ extension MapViewController: CLLocationManagerDelegate {
         print("Error: \(error)")
     }
     
-    func url(){
-        let url = URL(string: "https://maps.googleapis.com/maps/api/directions/json?origin=37.872167, -122.263386&destination=37.871549, -122.261958&key=AIzaSyDoagRoGRHcoory1pmwdyl03rh3xIQLFJI&mode=walking")!
-        
-        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
-            guard let data = data else { return }
-            print(String(data: data, encoding: .utf8)!)
-        }
-        
-        task.resume()
-    }
     
     
    
