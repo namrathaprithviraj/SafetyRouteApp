@@ -24,8 +24,10 @@
 import UIKit
 import GoogleMaps
 import GooglePlaces
+import MessageUI
 
-class MapViewController: UIViewController {
+class MapViewController: UIViewController, MFMessageComposeViewControllerDelegate {
+    
     
     var locationManager = CLLocationManager()
     var currentLocation: CLLocation?
@@ -154,6 +156,7 @@ class MapViewController: UIViewController {
     }
     
     
+    
     func fetchRoute(from source: CLLocationCoordinate2D, to destination: CLLocationCoordinate2D) {
         
         let combinedUrl : String = "https://maps.googleapis.com/maps/api/directions/json?origin=37.871163,-122.252717&destination=37.875226,-122.256649&mode=walking&key=AIzaSyDoagRoGRHcoory1pmwdyl03rh3xIQLFJI"
@@ -194,7 +197,10 @@ class MapViewController: UIViewController {
     }
     
     @objc func checkLocation() {
-        GMSGeometryIsLocationOnPathTolerance(locationManager.location!.coordinate, path!, true, 20)
+        let onPath = GMSGeometryIsLocationOnPathTolerance(locationManager.location!.coordinate, path!, true, 20)
+        if (onPath == false){
+            displayMessageInterface()
+        }
     }
 //
 //    func GMSGeometryIsLocationOnPathTolerance(point: CLLocationCoordinate2D, path: GMSPath, geodesic: Bool, tolerance: CLLocationDistance){
@@ -202,7 +208,25 @@ class MapViewController: UIViewController {
 //    }
     
 
+    func messageComposeViewController(_ controller: MFMessageComposeViewController, didFinishWith result: MessageComposeResult) {
+        
+    }
     
+    func displayMessageInterface() {
+        let composeVC = MFMessageComposeViewController()
+        composeVC.messageComposeDelegate = self
+        
+        // Configure the fields of the interface.
+        composeVC.recipients = ["4988589750"]
+        composeVC.body = "SOS"
+        
+        // Present the view controller modally.
+        if MFMessageComposeViewController.canSendText() {
+            self.present(composeVC, animated: true, completion: nil)
+        } else {
+            print("Can't send messages.")
+        }
+    }
     
     
     enum JSONError: String, Error {
