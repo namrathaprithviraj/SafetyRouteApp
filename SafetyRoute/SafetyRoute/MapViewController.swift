@@ -42,6 +42,9 @@ class MapViewController: UIViewController {
     // A default location to use when location permission is not granted.
     let defaultLocation = CLLocation(latitude: -33.869405, longitude: 151.199)
     
+   
+    
+    
     // Update the map once the user has made their selection.
     @IBAction func unwindToMain(segue: UIStoryboardSegue) {
         // Clear the map.
@@ -85,6 +88,96 @@ class MapViewController: UIViewController {
         mapView.isHidden = true
         
         listLikelyPlaces()
+        
+        
+        let marker = GMSMarker()
+        marker.position = CLLocationCoordinate2D(latitude: 37.872167, longitude: -122.263386)
+        marker.title = "Destination 1"
+        //marker.snippet = "Malaysia"
+        marker.map = mapView
+        
+        let marker2 = GMSMarker()
+        marker2.position = CLLocationCoordinate2D(latitude: 37.875176, longitude: -122.256642)
+        marker2.title = "Destination 2"
+        //marker2.snippet = "Malaysia"
+        marker2.map = mapView
+    
+        
+        
+       let a_coordinate_string = "37.872167, -122.263386"
+        let b_coordinate_string = "37.875176, -122.256642"
+        
+        let urlString = "https://maps.googleapis.com/maps/api/directions/json?origin=\(a_coordinate_string)&destination=\(b_coordinate_string)&mode=walking&key=AIzaSyDoagRoGRHcoory1pmwdyl03rh3xIQLFJI"
+        
+        
+        guard let url = URL(string: urlString) else {
+            print("Error: cannot create URL")
+            return
+        }
+        let urlRequest = URLRequest(url: url)
+        
+        // set up the session
+        let config = URLSessionConfiguration.default
+        let session = URLSession(configuration: config)
+        
+        // make the request
+        let task = session.dataTask(with: urlRequest, completionHandler: { (data, response, error) in
+            
+            do {
+                guard let data = data else {
+                    throw JSONError.NoData
+                }
+                guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary else {
+                    throw JSONError.ConversionFailed
+                }
+                print(json)
+            } catch let error as JSONError {
+                print(error.rawValue)
+            } catch let error as NSError {
+                print(error.debugDescription)
+            }
+            
+        })
+        task.resume()
+        
+        
+     /*   if let array = json["rows"] as? NSArray {
+            if let rows = array[0] as? NSDictionary{
+                if let array2 = rows["elements"] as? NSArray{
+                    if let elements = array2[0] as? NSDictionary{
+                        if let duration = elements["duration"] as? NSDictionary {
+                            if let text = duration["text"] as? String{
+                                DispatchQueue.main.async {
+                                    self.lbl_eta_duration.text = text;
+                                }
+                            }
+                        }
+                        if let duration = elements["distance"] as? NSDictionary {
+                            if let text = duration["text"] as? String{
+                                DispatchQueue.main.async {
+                                    self.lbl_distance.text = text;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }*/
+        
+        let path = GMSPath(fromEncodedPath: "yjxP{}mkRbCr@hI|CjCp@hB^vAFnABzBG`C[ZGFXLx@wBb@_@Da@@iA@SHOZ?n@D\\J\\NTRRZRf@R")
+        let polyline = GMSPolyline(path:path)
+        polyline.strokeWidth = 4
+        polyline.strokeColor = UIColor.init(hue: 210, saturation: 88, brightness: 84, alpha: 1)
+        polyline.map = mapView
+        
+        
+        
+
+    }
+    
+    enum JSONError: String, Error {
+        case NoData = "ERROR: no data"
+        case ConversionFailed = "ERROR: conversion from JSON failed"
     }
     
     // Populate the array with the list of likely places.
@@ -139,6 +232,8 @@ extension MapViewController: CLLocationManagerDelegate {
         }
         
         listLikelyPlaces()
+        
+       
     }
     
     // Handle authorization for the location manager.
@@ -165,4 +260,19 @@ extension MapViewController: CLLocationManagerDelegate {
         locationManager.stopUpdatingLocation()
         print("Error: \(error)")
     }
+    
+    func url(){
+        let url = URL(string: "https://maps.googleapis.com/maps/api/directions/json?origin=37.872167, -122.263386&destination=37.871549, -122.261958&key=AIzaSyDoagRoGRHcoory1pmwdyl03rh3xIQLFJI&mode=walking")!
+        
+        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+            guard let data = data else { return }
+            print(String(data: data, encoding: .utf8)!)
+        }
+        
+        task.resume()
+    }
+    
+    
+   
+   
 }
